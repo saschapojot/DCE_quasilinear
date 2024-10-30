@@ -220,6 +220,29 @@ public:
         mu=lmd*std::cos(theta)+Deltam;
         std::cout<<"D="<<D<<std::endl;
         std::cout<<"mu="<<mu<<std::endl;
+        this->F2=g0*std::sqrt(2.0*omegam)*(2.0*std::pow(lmd*std::sin(theta),2.0)+omegap*mu)/(2*D*lmd*sin(theta));
+
+        this->F3=g0*std::sqrt(2.0*omegam)/D*(0.5*mu-omegap);
+
+        this->F4=std::pow(g0,2.0)*(2.0*D*std::pow(lmd*std::sin(theta),2.0)+mu*omegap*std::pow(lmd*std::sin(theta),2.0)+mu*std::pow(omegap,3.0))/(4.0*std::pow(D,2.0)*lmd*omegap*std::sin(theta));
+
+        this->F5=std::pow(g0,2.0)*
+            (2.0*omegap*D+mu*std::pow(lmd*std::sin(theta),2.0)-4.0*omegap*std::pow(lmd*std::sin(theta),2.0)+mu*std::pow(omegap,2.0)-4.0*std::pow(omegap,3.0))
+        /(4.0*omegap*std::pow(D,2.0));
+
+        this->F6=std::pow(g0,2.0)*
+            (8.0*omegap*std::pow(lmd*std::sin(theta),2.0)-4.0*mu*std::pow(lmd*std::sin(theta),2.0)+D*mu)
+            /(4*lmd*std::sin(theta)*std::pow(D,2.0));
+
+        this->F7=omegam*mu/(4*lmd*std::sin(theta));
+
+        std::cout<<"F2="<<F2<<std::endl;
+        std::cout<<"F3="<<F3<<std::endl;
+        std::cout<<"F4="<<F4<<std::endl;
+        std::cout<<"F5="<<F5<<std::endl;
+        std::cout<<"F6="<<F6<<std::endl;
+        std::cout<<"F7="<<F7<<std::endl;
+        //end initializing parameters for A
 
 
     }//end constructor
