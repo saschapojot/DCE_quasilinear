@@ -59,3 +59,80 @@ double val=omegac*std::pow(x1,2.0)-0.5;
 
 
 }
+
+
+std::complex<double> evolution::A(const double& x1, const double& x2, const double & tau)
+{
+double rhoVal=this->rho(x1);
+    double rhoVal_squared=std::pow(rhoVal,2.0);
+
+    std::complex<double> part0=1i*this->P1(rhoVal)*tau;
+
+    std::complex<double> part1=1i*F2*rhoVal*x2*std::cos(omegap*tau);
+
+    std::complex<double> part2=1i*F3*rhoVal*x2*std::sin(omegap*tau);
+
+    std::complex<double>part3=1i*F4*rhoVal_squared*std::cos(2*omegap*tau);
+
+    std::complex<double> part4=1i*F5*rhoVal_squared*std::sin(2.0*omegap*tau);
+
+    std::complex<double> part5=1i*F6*rhoVal_squared;
+
+    std::complex<double> part6=1i*F7*std::pow(x2,2.0);
+
+    std::complex<double> part7(0.5*lmd*std::sin(theta)*tau,0);
+
+    std::complex<double> A_Val=part0+part1+part2+part3
+               + part4+part5+part6+part7;
+
+    return A_Val;
+
+
+}
+
+
+double evolution::P1(const double & rhoVal)
+{
+double val=0.25*omegac+0.5*Deltam-0.5*omegac*rhoVal+(2.0*omegap-mu)/(2.0*D)*std::pow(g0*rhoVal,2.0);
+
+    return val;
+
+
+}
+
+
+std::complex<double> evolution::B(const double& x1, const double& x2, const double & tau)
+{
+
+    double rhoVal=this->rho(x1);
+    double rhoVal_squared=std::pow(rhoVal,2.0);
+
+    double expVal=std::exp(lmd*std::sin(theta)*tau);
+
+    double expVal_squared=std::exp(2.0*lmd*std::sin(theta)*tau);
+
+    std::complex<double> part0=1i*R1*rhoVal_squared;
+
+    std::complex<double> part1=1i*R2*rhoVal*x2*expVal;
+
+    std::complex<double> part2=1i*R3*rhoVal_squared*std::sin(omegap*tau)*expVal;
+
+    std::complex<double> part3=1i*R4*rhoVal_squared*std::cos(omegap*tau)*expVal;
+
+    std::complex<double> part4=1i*(R5*std::pow(x2,2.0)+R6*rhoVal_squared)*expVal_squared;
+
+
+    std::complex<double> part5=1i*R7*rhoVal*x2*std::sin(omegap*tau)*expVal_squared;
+
+    std::complex<double> part6=1i*R8*rhoVal*x2*std::cos(omegap*tau)*expVal_squared;
+
+    std::complex<double> part7=1i*R9*rhoVal_squared*std::cos(2.0*omegap*tau)*expVal_squared;
+
+    std::complex<double> part8=1i*R10*rhoVal_squared*std::sin(2.0*omegap*tau)*expVal_squared;
+
+    std::complex<double> B_Val=part0+part1+part2+part3
+                                +part4+part5+part6+part7+part8;
+
+    return B_Val;
+
+}

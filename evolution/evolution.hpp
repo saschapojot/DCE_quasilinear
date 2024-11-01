@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 const auto PI=M_PI;
+using namespace std::complex_literals;
 namespace fs = boost::filesystem;
 //This subroutine computes evolution using operator splitting
 //one step is exact solution of quasi-linear pde
@@ -140,7 +141,8 @@ public:
         <<", er="<<er<<", thetaCoef="<<thetaCoef<<std::endl;
 
 
-
+        this->L1=5;
+        this->L2=8;
         this->r=std::log(er);
         this->theta=thetaCoef*PI;
         this->Deltam=omegam-omegap;
@@ -244,12 +246,66 @@ public:
         std::cout<<"F7="<<F7<<std::endl;
         //end initializing parameters for A
 
+        //initialize parameters for B
+        this->R1=std::pow(g0,2.0)*lmd*std::sin(theta)/(2.0*omegap)
+                *(D-omegap*mu)/std::pow(D,2.0);
+
+        this->R2=g0*lmd*std::sin(theta)/D*std::sqrt(2.0*omegam);
+
+        this->R3=-2.0*std::pow(g0*lmd*std::sin(theta),2.0)/std::pow(D,2.0);
+
+        this->R4=2.0*std::pow(g0,2.0)*omegap*lmd*std::sin(theta)/std::pow(D,2.0);
+
+        this->R5=omegam/(4.0*lmd*std::sin(theta))*mu;
+
+        this->R6=mu*std::pow(g0,2.0)/(4.0*lmd*std::sin(theta)*D);
+
+        this->R7=-mu*g0/(2.0*D)*std::sqrt(2.0*omegam);
+
+        this->R8=mu*g0*omegap/(2.0*lmd*std::sin(theta)*D)*std::sqrt(2.0*omegam);
+
+        this->R9=mu*std::pow(g0,2.0)/(4.0*lmd*std::sin(theta)*std::pow(D,2.0))*(std::pow(omegap,2.0)-std::pow(lmd*std::sin(theta),2.0));
+
+        this->R10=-mu*omegap*std::pow(g0,2.0)/(2*std::pow(D,2.0));
+
+        std::cout<<"R1="<<R1<<std::endl;
+        std::cout<<"R2="<<R2<<std::endl;
+        std::cout<<"R3="<<R3<<std::endl;
+
+        std::cout<<"R4="<<R4<<std::endl;
+        std::cout<<"R5="<<R5<<std::endl;
+        std::cout<<"R6="<<R6<<std::endl;
+
+        std::cout<<"R7="<<R7<<std::endl;
+        std::cout<<"R8="<<R8<<std::endl;
+        std::cout<<"R9="<<R9<<std::endl;
+
+        std::cout<<"R10="<<R10<<std::endl;
+
+        //end initializing parameters for B
+
+        double x1Tmp=0.1;
+        double x2Tmp=0.2;
+        double tauTmp=0.44;
+       // std::complex<double> A_val_Tmp=A(x1Tmp,x2Tmp,tauTmp);
+       //      std::cout<<"A_val_Tmp="<<A_val_Tmp<<std::endl;
+
+        std::complex<double> B_val_tmp=B(x1Tmp,x2Tmp,tauTmp);
+        std::cout<<"B_val_tmp="<<B_val_tmp<<std::endl;
 
     }//end constructor
 
-    // H1^{R} part
-    double rho(const double &x1);
+
 public:
+
+    std::complex<double> B(const double& x1, const double& x2, const double & tau);
+
+   std::complex<double> A(const double& x1, const double& x2, const double & tau);
+
+
+    double P1(const double & rhoVal);
+
+    double rho(const double &x1);
     ///
     /// @param n1 index of x1
     /// @return wavefunction of photon at n1
@@ -296,8 +352,8 @@ public:
     int N1;//must be even
     int N2;//must be even
 
-    double L1=5;
-    double L2=8;
+    double L1;
+    double L2;
     double dx1;
 
     double dx2;
@@ -321,6 +377,10 @@ public:
     double D;
     double mu;
     double F2,F3,F4,F5,F6,F7;
+
+    //parameters for B
+
+    double R1,R2,R3,R4,R5,R6,R7,R8,R9,R10;
 };
 
 #endif //EVOLUTION_HPP
