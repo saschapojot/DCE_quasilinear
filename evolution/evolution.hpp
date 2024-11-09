@@ -26,7 +26,6 @@ namespace fs = boost::filesystem;
 
 class evolution
 {
-
 public:
     evolution(const std::string &cppInParamsFileName)
     {
@@ -287,11 +286,11 @@ public:
         double x1Tmp=0.1;
         double x2Tmp=0.2;
         double tauTmp=0.44;
-       // std::complex<double> A_val_Tmp=A(x1Tmp,x2Tmp,tauTmp);
-       //      std::cout<<"A_val_Tmp="<<A_val_Tmp<<std::endl;
+        // std::complex<double> A_val_Tmp=A(x1Tmp,x2Tmp,tauTmp);
+        //      std::cout<<"A_val_Tmp="<<A_val_Tmp<<std::endl;
 
-        std::complex<double> B_val_tmp=B(x1Tmp,x2Tmp,tauTmp);
-        std::cout<<"B_val_tmp="<<B_val_tmp<<std::endl;
+        // std::complex<double> B_val_tmp=B(x1Tmp,x2Tmp,tauTmp);
+        // std::cout<<"B_val_tmp="<<B_val_tmp<<std::endl;
 
     }//end constructor
 
@@ -300,7 +299,7 @@ public:
 
     std::complex<double> B(const double& x1, const double& x2, const double & tau);
 
-   std::complex<double> A(const double& x1, const double& x2, const double & tau);
+    std::complex<double> A(const double& x1, const double& x2, const double & tau);
 
 
     double P1(const double & rhoVal);
@@ -371,7 +370,7 @@ public:
     std::vector<double> k1ValsAll_intepolation;
     std::vector<double>k2ValsAll_interpolation;
 
-    arma::cx_dmat psi0;
+
 
     //parameters for A
     double D;
@@ -381,6 +380,13 @@ public:
     //parameters for B
 
     double R1,R2,R3,R4,R5,R6,R7,R8,R9,R10;
+
+    arma::cx_dmat psi0_arma;//armadillo psi0
+    std::complex<double> * psi0;
+
+    std::complex<double> *psiTmp;
+    std::complex<double> * psi_tilde;
+    
 };
 
 #endif //EVOLUTION_HPP
