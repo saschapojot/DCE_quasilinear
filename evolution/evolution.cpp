@@ -136,3 +136,114 @@ std::complex<double> evolution::B(const double& x1, const double& x2, const doub
     return B_Val;
 
 }
+
+
+arma::dmat evolution::construct_S_mat(const double &tau)
+{
+
+    double exp_part= std::exp(lmd*std::sin(theta)*tau);
+
+    double sin_val=std::sin(omegap*tau);
+
+    double cos_val=std::cos(omegap*tau);
+
+    arma::dmat S2_mat=S2_mat_part1*exp_part+S2_mat_part2*sin_val*exp_part
+                     + S2_mat_part3*cos_val*exp_part+S2_mat_part4;
+
+
+    return S2_mat;
+
+
+
+}
+
+
+void evolution::construct_S_mat_spatial()
+{
+    this->S2_mat_part1=arma::dmat(N1, N2, arma::fill::zeros);
+    this->S2_mat_part2=arma::dmat(N1, N2, arma::fill::zeros);
+    this->S2_mat_part3=arma::dmat(N1, N2, arma::fill::zeros);
+    this->S2_mat_part4=arma::dmat(N1, N2, arma::fill::zeros);
+
+    //begin initializing S2_mat_part1
+    for (int n1=0;n1<N1;n1++)
+    {
+        for (int n2=0;n2<N2;n2++)
+        {
+            S2_mat_part1(n1,n2)=this->x2ValsAll[n2];
+
+        }//end n2
+    }//end n1, end initializing S2_mat_part1
+
+    //begin initializing S2_mat_part2
+    for (int n1=0;n1<N1;n1++)
+    {
+        double x1n1=this->x1ValsAll[n1];
+        double rhoTmp=this->rho(x1n1);
+        for (int n2=0;n2<N2;n2++)
+        {
+            S2_mat_part2(n1,n2)=-g0*lmd*std::sin(theta)/D*std::sqrt(2.0/omegam)*rhoTmp;
+        }//end n2
+
+    }//end n1, end initializing S2_mat_part2
+
+    //begin initializing S2_mat_part3
+    for(int n1=0;n1<N1;n1++)
+    {
+        double x1n1=this->x1ValsAll[n1];
+        double rhoTmp=this->rho(x1n1);
+        for (int n2=0;n2<N2;n2++)
+        {
+            S2_mat_part3(n1,n2)=g0*omegap/D*std::sqrt(2.0/omegam)*rhoTmp;
+        }//end n2
+
+    }//end n1, end initializing S2_mat_part3
+
+
+    //begin initializing S2_mat_part4
+    for(int n1=0;n1<N1;n1++)
+    {
+        double x1n1=this->x1ValsAll[n1];
+        double rhoTmp=this->rho(x1n1);
+        for(int n2=0;n2<N2;n2++)
+        {
+            S2_mat_part4(n1,n2)=-g0*omegap/D*std::sqrt(2.0/omegam)*rhoTmp;
+        }//end n2
+    }//end n1, end initializing S2_mat_part4
+
+}
+
+
+
+arma::cx_dmat evolution::construct_A_mat(const double & tau)
+{
+
+    arma::cx_dmat A_mat(N1,N2,arma::fill::zeros);
+
+    for (int n1=0;n1<N1;n1++)
+    {
+        for(int n2=0;n2<N2;n2++)
+        {
+            double x1n1=this->x1ValsAll[n1];
+            double x2n2=this->x2ValsAll[n2];
+
+            A_mat(n1,n2)=this->A(x1n1,x2n2,tau);
+        }//end n2
+    }//end n1
+
+}
+
+arma::cx_dmat evolution::construct_B_mat(const double & tau)
+{
+
+    arma::cx_dmat B_mat(N1,N2,arma::fill::zeros);
+    for(int n1=0;n1<N1;n1++)
+    {
+        for(int n2=0;n2<N2;n2++)
+        {
+            double x1n1=this->x1ValsAll[n1];
+            double x2n2=this->x2ValsAll[n2];
+            B_mat(n1,n2)=this->B(x1n1,x2n2,tau);
+        }//end n2
+    }//end n1
+}
