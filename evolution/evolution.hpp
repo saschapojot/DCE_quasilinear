@@ -381,11 +381,10 @@ public:
 
     double R1,R2,R3,R4,R5,R6,R7,R8,R9,R10;
 
-    arma::cx_dmat psi0_arma;//armadillo psi0
-    std::complex<double> * psi0;
+    arma::cx_dmat psi0;//armadillo psi0
+    arma::cx_dmat S2;
 
-    std::complex<double> *psiTmp;
-    std::complex<double> * psi_tilde;
+
     
 };
 
