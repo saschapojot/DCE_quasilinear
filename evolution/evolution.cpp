@@ -247,3 +247,5 @@ arma::cx_dmat evolution::construct_B_mat(const double & tau)
         }//end n2
     }//end n1
 }
+
+
