@@ -281,11 +281,26 @@ public:
 
         std::cout<<"R10="<<R10<<std::endl;
 
+
+
+
+
         //end initializing parameters for B
+
+        //matrices
+        this->construct_S_mat_spatial();
+
 
         double x1Tmp=0.1;
         double x2Tmp=0.2;
-        double tauTmp=0.44;
+        double tauTmp=0.04;
+
+
+        arma::dmat S2Tmp=construct_S_mat(tauTmp);
+
+        int n1=10;
+        int n2=134;
+        std::cout<<"S2Tmp(n1,n2)="<<S2Tmp(n1,n2)<<std::endl;
         // std::complex<double> A_val_Tmp=A(x1Tmp,x2Tmp,tauTmp);
         //      std::cout<<"A_val_Tmp="<<A_val_Tmp<<std::endl;
 
@@ -296,6 +311,18 @@ public:
 
 
 public:
+
+
+    arma::dmat construct_S_mat( const double &tau);
+
+    void construct_S_mat_spatial();
+
+    arma::cx_dmat construct_A_mat(const double & tau);
+
+
+    arma::cx_dmat construct_B_mat(const double & tau);
+
+
 
     std::complex<double> B(const double& x1, const double& x2, const double & tau);
 
@@ -382,10 +409,12 @@ public:
     double R1,R2,R3,R4,R5,R6,R7,R8,R9,R10;
 
     arma::cx_dmat psi0;//armadillo psi0
-    arma::cx_dmat S2;
 
 
-    
+    arma::dmat S2_mat_part1,S2_mat_part2,S2_mat_part3,S2_mat_part4;
+
+
+
 };
 
 #endif //EVOLUTION_HPP
