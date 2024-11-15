@@ -312,7 +312,11 @@ public:
 
 public:
 
-
+    std::complex<double> * Phi_2_c_ptr(std::complex<double> *Phi);
+    ///
+    /// @param psi wavefunction matrix
+    /// @return raw data pointer, column major order, in the note, the content in pointer is Phi
+    std::complex<double> * cx_dmat_2_complex_ptr(const arma::cx_dmat& psi);
     arma::dmat construct_S_mat( const double &tau);
 
     void construct_S_mat_spatial();

@@ -230,7 +230,7 @@ arma::cx_dmat evolution::construct_A_mat(const double & tau)
             A_mat(n1,n2)=this->A(x1n1,x2n2,tau);
         }//end n2
     }//end n1
-
+    return A_mat;
 }
 
 arma::cx_dmat evolution::construct_B_mat(const double & tau)
@@ -246,6 +246,20 @@ arma::cx_dmat evolution::construct_B_mat(const double & tau)
             B_mat(n1,n2)=this->B(x1n1,x2n2,tau);
         }//end n2
     }//end n1
+
+    return B_mat;
 }
 
 
+std::complex<double> * evolution::cx_dmat_2_complex_ptr(const arma::cx_dmat& psi){
+
+    return const_cast<std::complex<double>*>(psi.memptr());
+
+}
+
+
+std::complex<double> * evolution::Phi_2_c_ptr(std::complex<double> *Phi){
+
+
+
+}
