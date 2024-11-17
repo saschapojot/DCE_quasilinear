@@ -290,7 +290,31 @@ public:
         //matrices
         this->construct_S_mat_spatial();
 
+        //pointers
+        this->d_ptr=new std::complex<double>[N1*N2];
+        this->Phi=new std::complex<double>[N1*N2];
 
+        //plans
+
+        //plan Phi to d_ptr, column fft
+       this->M1_Phi=N2;
+       this->M2_phi=N1;
+       int rank_Phi_2_d_ptr=1;
+
+       int n_Phi[]={M1_Phi};
+       int how_many_Phi=M2_phi;
+       int istride_Phi=M2_phi, ostride_Phi=M2_phi;
+       int idist_Phi=1, odist_Phi=1;
+        plan_col_Phi_2_d_ptr=fftw_plan_many_dft(
+                rank_Phi_2_d_ptr,n_Phi,how_many_Phi,
+                reinterpret_cast < fftw_complex * >(Phi), NULL,
+                istride_Phi,idist_Phi,
+                reinterpret_cast < fftw_complex * >(d_ptr),NULL,
+                ostride_Phi,odist_Phi,
+                FFTW_FORWARD, FFTW_MEASURE
+                );
+
+       //end plan Phi to d_ptr, column fft
         double x1Tmp=0.1;
         double x2Tmp=0.2;
         double tauTmp=0.04;
@@ -309,14 +333,24 @@ public:
 
     }//end constructor
 
+ ~ evolution() {
 
+     delete[] d_ptr;
+     delete[] Phi;
+     fftw_destroy_plan(plan_col_Phi_2_d_ptr);
+ }
 public:
 
-    std::complex<double> * Phi_2_c_ptr(std::complex<double> *Phi);
+    std::complex<double> * Phi_2_c_ptr();
     ///
     /// @param psi wavefunction matrix
     /// @return raw data pointer, column major order, in the note, the content in pointer is Phi
     std::complex<double> * cx_dmat_2_complex_ptr(const arma::cx_dmat& psi);
+
+    //fft for each column of input, input is row major, input matrix is M1 by M2
+    void fft_columns ( std :: complex < double >* input , std :: complex < double >* output , int M1 , int M2 );
+    //fft for each row of input, input is row major,  input matrix is M1 by M2
+    void fft_rows(std::complex<double>* input, std::complex<double>* output, int M1, int M2);
     arma::dmat construct_S_mat( const double &tau);
 
     void construct_S_mat_spatial();
@@ -413,9 +447,15 @@ public:
     double R1,R2,R3,R4,R5,R6,R7,R8,R9,R10;
 
     arma::cx_dmat psi0;//armadillo psi0
-
+    std::complex<double> * d_ptr;
+    std::complex<double> * Phi;
 
     arma::dmat S2_mat_part1,S2_mat_part2,S2_mat_part3,S2_mat_part4;
+
+    //plan Phi to d_ptr
+    fftw_plan plan_col_Phi_2_d_ptr;
+    int M1_Phi;
+    int M2_phi;
 
 
 
