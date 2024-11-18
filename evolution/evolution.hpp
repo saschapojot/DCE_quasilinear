@@ -282,8 +282,12 @@ public:
         std::cout<<"R10="<<R10<<std::endl;
 
 
-
-
+        this->multiplier_of_d_arma=std::vector<std::complex<double>>(N2);
+        for (int j=0;j<N2;j++)
+        {
+            multiplier_of_d_arma[j]=std::exp(std::complex<double>(0, PI * j));
+        }
+        this->one_over_N2=std::complex<double>(1.0/static_cast<double>(N2),0);
 
         //end initializing parameters for B
 
@@ -293,7 +297,9 @@ public:
         //pointers
         this->d_ptr=new std::complex<double>[N1*N2];
         this->Phi=new std::complex<double>[N1*N2];
-
+        //arma matrices
+        this->d_arma=arma::cx_dmat(N1,N2);
+        this->c_arma=arma::cx_dmat(N1,N2);
         //plans
 
         //plan Phi to d_ptr, column fft
@@ -341,16 +347,13 @@ public:
  }
 public:
 
-    std::complex<double> * Phi_2_c_ptr();
+    std::complex<double> * Phi_2_c_arma();
     ///
     /// @param psi wavefunction matrix
     /// @return raw data pointer, column major order, in the note, the content in pointer is Phi
     std::complex<double> * cx_dmat_2_complex_ptr(const arma::cx_dmat& psi);
 
-    //fft for each column of input, input is row major, input matrix is M1 by M2
-    void fft_columns ( std :: complex < double >* input , std :: complex < double >* output , int M1 , int M2 );
-    //fft for each row of input, input is row major,  input matrix is M1 by M2
-    void fft_rows(std::complex<double>* input, std::complex<double>* output, int M1, int M2);
+
     arma::dmat construct_S_mat( const double &tau);
 
     void construct_S_mat_spatial();
@@ -446,9 +449,12 @@ public:
 
     double R1,R2,R3,R4,R5,R6,R7,R8,R9,R10;
 
-    arma::cx_dmat psi0;//armadillo psi0
+    arma::cx_dmat psi0_arma;//armadillo psi0
     std::complex<double> * d_ptr;
     std::complex<double> * Phi;
+    arma::cx_dmat d_arma;
+    arma::cx_dmat c_arma;
+
 
     arma::dmat S2_mat_part1,S2_mat_part2,S2_mat_part3,S2_mat_part4;
 
@@ -456,6 +462,9 @@ public:
     fftw_plan plan_col_Phi_2_d_ptr;
     int M1_Phi;
     int M2_phi;
+
+    std::vector<std::complex<double>> multiplier_of_d_arma;
+    std::complex<double>one_over_N2;
 
 
 

@@ -43,9 +43,9 @@ void evolution::init_psi0()
     for(int n2=0;n2<N2;n2++){
         vec2(n2)= f2(n2);
     }
-    this->psi0=arma::kron(vec1,vec2);
-    std::complex<double> nm(arma::norm(psi0,"fro"),0);
-    psi0/=nm;
+    this->psi0_arma=arma::kron(vec1,vec2);
+    std::complex<double> nm(arma::norm(psi0_arma,"fro"),0);
+    psi0_arma/=nm;
 
     // std::cout<<"norm="<<arma::norm(psi0,"fro")<<std::endl;
 
@@ -258,63 +258,22 @@ std::complex<double> * evolution::cx_dmat_2_complex_ptr(const arma::cx_dmat& psi
 }
 
 
-std::complex<double> * evolution::Phi_2_c_ptr(){
+std::complex<double> * evolution::Phi_2_c_arma(){
 
     // Phi to d_ptr, column fft
     fftw_execute(plan_col_Phi_2_d_ptr);
 
-}
+    //d_ptr to d_arma
+    this->d_arma=arma::cx_dmat(d_ptr,N1,N2,true);
 
+    //multiply jth row of d_arma with multiplier_of_d_arma[j]
+    for(int j=0;j<N2;j++)
+    {
+        d_arma.col(j)*=multiplier_of_d_arma[j];
+    }
 
-//fft for each row of input, input is row major,  input matrix is M1 by M2
-void evolution::fft_rows(std::complex<double>* input, std::complex<double>* output, int M1, int M2){
-
-    int rank = 1;                   // 1D FFT
-    int n[] = {M2};                 // Length of each 1D FFT
-    int howmany = M1;               // Number of 1D FFTs (one per row)
-    int istride = 1, ostride = 1;   // Contiguous elements in each row
-    int idist = M2, odist = M2;     // Distance between consecutive rows
-
-    fftw_plan plan = fftw_plan_many_dft(
-            rank, n, howmany,
-            reinterpret_cast<fftw_complex*>(input), NULL,
-            istride, idist,
-            reinterpret_cast<fftw_complex*>(output), NULL,
-            ostride, odist,
-            FFTW_FORWARD, FFTW_ESTIMATE
-    );
-
-    fftw_execute(plan);
-    fftw_destroy_plan(plan);
+    c_arma=d_arma*one_over_N2;
 
 }
 
 
-//fft for each column of input, input is row major, input matrix is M1 by M2
-void evolution::fft_columns ( std :: complex < double >* input , std :: complex < double >* output , int M1 , int M2 ){
-
-    // Define FFT parameters for column - wise FFT
-    int rank = 1; // 1 D FFT
-    int n [] = { M1 }; // Length of each FFT is N1 ( number of rows )
-    int howmany = M2 ; // Number of FFTs is N2 ( number of columns )
-    int istride = M2 , ostride = M2 ; // Stride for column - wise FFT
-    int idist = 1 , odist = 1; // Distance between start of each column FFT
-
-    // Create FFTW plan for column - wise , out - of - place transform
-
-    fftw_plan plan = fftw_plan_many_dft (
-            rank , n , howmany ,
-            reinterpret_cast < fftw_complex * >( input ) , NULL ,
-            istride , idist ,
-            reinterpret_cast < fftw_complex * >( output ) , NULL ,
-            ostride , odist ,
-            FFTW_FORWARD , FFTW_ESTIMATE
-    ) ;
-
-    // Execute the FFT plan
-    fftw_execute ( plan ) ;
-
-    // Clean up
-    fftw_destroy_plan ( plan ) ;
-
-}
