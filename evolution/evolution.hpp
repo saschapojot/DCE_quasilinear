@@ -383,6 +383,8 @@ public:
     /// @return wavefunction of phonon at n2
     double f2(int n2);
 
+    void init();
+
 
     void init_psi0();
 

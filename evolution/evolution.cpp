@@ -59,6 +59,13 @@ double val=omegac*std::pow(x1,2.0)-0.5;
 
 
 }
+void evolution::init()
+{
+
+    this->init_psi0();
+    this->construct_S_mat_spatial();
+
+}
 
 
 std::complex<double> evolution::A(const double& x1, const double& x2, const double & tau)
