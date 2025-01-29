@@ -22,15 +22,15 @@ set_source_files_properties(
 )
 
 
-set(Python3_INCLUDE_DIRS "/usr/include/python3.12")
-set(Python3_LIBRARIES "/usr/lib/x86_64-linux-gnu/libpython3.12.so")
+set(Python3_INCLUDE_DIRS "~/anaconda3/bin/python")
+set(Python3_LIBRARIES "~/anaconda3/lib/libpython3.12.so")
 include_directories(${Python3_INCLUDE_DIRS})
 
 set(Boost_NO_SYSTEM_PATHS YES)
 if (Boost_NO_SYSTEM_PATHS)
-    set(Boost_ROOT "/home/polya/cppLocal/boostBuild")
-    set(Boost_INCLUDE_DIR "/home/polya/cppLocal/boostBuild/include")
-    set(Boost_LIBRARY_DIR "/home/polya/cppLocal/boostBuild/lib")
+    set(Boost_ROOT "~/cppLocal/boostBuild")
+    set(Boost_INCLUDE_DIR "~/cppLocal/boostBuild/include")
+    set(Boost_LIBRARY_DIR "~/cppLocal/boostBuild/lib")
 endif (Boost_NO_SYSTEM_PATHS)
 
 find_package(Boost REQUIRED COMPONENTS python numpy filesystem)
@@ -54,10 +54,10 @@ target_link_libraries(run_evolution Boost::numpy)
 #python
 target_link_libraries(run_evolution ${Python3_LIBRARIES})
 
-include_directories("/home/polya/cppLocal/fftw3/include")
-include_directories("/home/polya/cppLocal/armadillo/include")
+include_directories("~/cppLocal/fftw3/include")
+include_directories("~/cppLocal/armadillo/include")
 #armadillo
-file(GLOB LIBS_SO "/home/polya/cppLocal/armadillo/lib/*.so")
+file(GLOB LIBS_SO "~/cppLocal/armadillo/lib/libarmadillo.so")
 target_link_libraries(run_evolution ${LIBS_SO})
 
 
