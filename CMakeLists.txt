@@ -62,5 +62,5 @@ target_link_libraries(run_evolution ${LIBS_SO})
 
 
 #fftw3
-file(GLOB LIBS_A "/home/polya/cppLocal/fftw3/lib/*.a")
+file(GLOB LIBS_A "~/cppLocal/fftw3/lib/*.a")
 target_link_libraries(run_evolution ${LIBS_A})

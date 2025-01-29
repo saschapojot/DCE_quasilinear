@@ -26,8 +26,8 @@ void fft_rows(std::complex<double>* input, std::complex<double>* output, int M1,
 void fft_columns ( std :: complex < double >* input , std :: complex < double >* output , int M1 , int M2 ){
 // Define FFT parameters for column - wise FFT
     int rank = 1; // 1 D FFT
-    int n [] = { M1 }; // Length of each FFT is N1 ( number of rows )
-    int howmany = M2 ; // Number of FFTs is N2 ( number of columns )
+    int n [] = { M1 }; // Length of each FFT is M1 ( number of rows )
+    int howmany = M2 ; // Number of FFTs is M2 ( number of columns )
     int istride = M2 , ostride = M2 ; // Stride for column - wise FFT
     int idist = 1 , odist = 1; // Distance between start of each column FFT
 
