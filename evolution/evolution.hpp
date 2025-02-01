@@ -160,7 +160,7 @@ public:
         {
             N1+=1;
         }
-
+        std::cout<<"L1="<<L1<<", L2="<<L2<<std::endl;
         std::cout<<"N1="<<N1<<std::endl;
         std::cout<<"N2="<<N2<<std::endl;
 
@@ -192,7 +192,7 @@ public:
 
         for(int n1=0;n1<N1;n1++)
         {
-            k1ValsAll_intepolation.push_back(2*PI*static_cast<double>(n1)/(2.0*L1));
+            k1ValsAll_interpolation.push_back(2*PI*static_cast<double>(n1)/(2.0*L1));
 
         }
         for(const auto&val: k1ValsAll_fft){
@@ -281,8 +281,9 @@ public:
 
         std::cout<<"R10="<<R10<<std::endl;
 
-
+        //+-1, for d_arma
         this->multiplier_of_d_arma=std::vector<std::complex<double>>(N2);
+
         for (int j=0;j<N2;j++)
         {
             multiplier_of_d_arma[j]=std::exp(std::complex<double>(0, PI * j));
@@ -297,9 +298,15 @@ public:
         //pointers
         this->d_ptr=new std::complex<double>[N1*N2];
         this->Phi=new std::complex<double>[N1*N2];
+        this->D_widehat=new std::complex<double>[N1*N2];
+        this->I_widehat=new std::complex<double>[N1*N2];
+        this->J_widehat=new std::complex<double>[N1*N2];
         //arma matrices
         this->d_arma=arma::cx_dmat(N1,N2);
         this->c_arma=arma::cx_dmat(N1,N2);
+        this->F_widehat_arma=arma::cx_dmat(N1,N2);
+        this->G_widehat_arma=arma::cx_dmat(N1,N2);
+
         //plans
 
         //plan Phi to d_ptr, column fft
@@ -321,31 +328,60 @@ public:
                 );
 
        //end plan Phi to d_ptr, column fft
-        double x1Tmp=0.1;
-        double x2Tmp=0.2;
-        double tauTmp=0.04;
+        // double x1Tmp=0.1;
+        // double x2Tmp=0.2;
+        // double tauTmp=0.04;
 
 
-        arma::dmat S2Tmp=construct_S_mat(tauTmp);
+        // arma::dmat S2Tmp=construct_S_mat(tauTmp);
 
-        int n1=10;
-        int n2=134;
-        std::cout<<"S2Tmp(n1,n2)="<<S2Tmp(n1,n2)<<std::endl;
+        // int n1=10;
+        // int n2=134;
+        // std::cout<<"S2Tmp(n1,n2)="<<S2Tmp(n1,n2)<<std::endl;
         // std::complex<double> A_val_Tmp=A(x1Tmp,x2Tmp,tauTmp);
         //      std::cout<<"A_val_Tmp="<<A_val_Tmp<<std::endl;
 
         // std::complex<double> B_val_tmp=B(x1Tmp,x2Tmp,tauTmp);
         // std::cout<<"B_val_tmp="<<B_val_tmp<<std::endl;
 
+        this->plan_2d_fft_Phi_2_D_widehat=fftw_plan_dft_2d(N2,N1,
+            reinterpret_cast<fftw_complex*>(Phi),
+            reinterpret_cast<fftw_complex*>(D_widehat),
+           FFTW_FORWARD, FFTW_MEASURE);
+
+        this->plan_2d_ifft_I_widehat_2_J_widehat=fftw_plan_dft_2d(N2,N1,
+            reinterpret_cast<fftw_complex*>(I_widehat),
+            reinterpret_cast<fftw_complex*>(J_widehat),FFTW_BACKWARD,FFTW_MEASURE );
+
+
     }//end constructor
 
- ~ evolution() {
+ ~ evolution()
+    {
+        delete[] d_ptr;
+        delete[] Phi;
+        delete [] D_widehat;
+        delete [] I_widehat;
+        delete [] J_widehat;
 
-     delete[] d_ptr;
-     delete[] Phi;
-     fftw_destroy_plan(plan_col_Phi_2_d_ptr);
- }
+        fftw_destroy_plan(plan_col_Phi_2_d_ptr);
+        fftw_destroy_plan(plan_2d_fft_Phi_2_D_widehat);
+        fftw_destroy_plan(plan_2d_ifft_I_widehat_2_J_widehat);
+    }
 public:
+    arma::cx_dmat construct_V_mat(const double &Delta_t);
+    ///
+    /// @param Psi_arma wavefunction in cx_dmat
+    /// @param Delta_t time step
+    /// this function computes evolution in U2
+    void step_U2(arma::cx_dmat & Psi_arma, const double &Delta_t);
+
+    ///
+    /// @param Delta_t time step
+    /// @param n1
+    /// @param n2
+    /// @return element of V
+    std::complex<double> V_elem(const double &Delta_t, const int &n1, const int &n2);
 
     std::complex<double> * Phi_2_c_arma();
     ///
@@ -437,7 +473,7 @@ public:
     std::vector<double> k1ValsAllSquared_fft;
     std::vector<double> k2ValsAllSquared_fft;
 
-    std::vector<double> k1ValsAll_intepolation;
+    std::vector<double> k1ValsAll_interpolation;
     std::vector<double>k2ValsAll_interpolation;
 
 
@@ -467,6 +503,17 @@ public:
 
     std::vector<std::complex<double>> multiplier_of_d_arma;
     std::complex<double>one_over_N2;
+
+
+    //data for U2
+    arma::cx_dmat F_widehat_arma,G_widehat_arma;
+    std::complex<double> * D_widehat;
+  std::complex<double> *  I_widehat;
+    std::complex<double> * J_widehat;
+
+    //2d fft
+    fftw_plan plan_2d_fft_Phi_2_D_widehat;
+    fftw_plan plan_2d_ifft_I_widehat_2_J_widehat;
 
 
 

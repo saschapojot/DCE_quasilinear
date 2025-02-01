@@ -47,7 +47,7 @@ void evolution::init_psi0()
     std::complex<double> nm(arma::norm(psi0_arma,"fro"),0);
     psi0_arma/=nm;
 
-    // std::cout<<"norm="<<arma::norm(psi0,"fro")<<std::endl;
+    // std::cout<<"norm="<<arma::norm(psi0_arma,"fro")<<std::endl;
 
 }
 
@@ -284,3 +284,57 @@ std::complex<double> * evolution::Phi_2_c_arma(){
 }
 
 
+///
+/// @param Psi_arma wavefunction in cx_dmat
+/// @param Delta_t time step
+/// this function computes evolution in U2
+void evolution::step_U2(arma::cx_dmat & Psi_arma, const double &Delta_t)
+{
+
+//Psi to Phi
+    this->Phi=Psi_arma.memptr();
+
+    //Phi to D_widehat
+    fftw_execute(plan_2d_fft_Phi_2_D_widehat);
+
+    //D_widehat to F_widehat_arma
+    this->F_widehat_arma=arma::cx_dmat(this->D_widehat,N1,N2,true);
+
+
+
+}
+
+
+
+
+///
+/// @param Delta_t time step
+/// @param n1
+/// @param n2
+/// @return element of V
+std::complex<double> evolution::V_elem(const double &Delta_t, const int &n1, const int &n2)
+{
+    double tmp=(lmd*std::cos(theta)-Deltam)/(2.0*omegam)*k2ValsAllSquared_fft[n2]-0.5*k1ValsAllSquared_fft[n1];
+    tmp*=Delta_t;
+
+    std::complex<double> to_exp=std::complex<double>(0.0,tmp);
+
+    std::complex<double> elem_tmp=std::exp(to_exp);
+
+    return elem_tmp;
+
+
+}
+
+arma::cx_dmat evolution::construct_V_mat(const double &Delta_t)
+{
+    arma::cx_dmat V_mat(N1,N2,arma::fill::zeros);
+    for (int n1=0;n1<N1;n1++)
+    {
+        for (int n2=0;n2<N2;n2++)
+        {
+            V_mat(n1,n2)=this->V_elem(Delta_t,n1,n2);
+        }
+    }
+    return V_mat;
+}
