@@ -352,8 +352,66 @@ public:
         this->plan_2d_ifft_I_widehat_2_J_widehat=fftw_plan_dft_2d(N2,N1,
             reinterpret_cast<fftw_complex*>(I_widehat),
             reinterpret_cast<fftw_complex*>(J_widehat),FFTW_BACKWARD,FFTW_MEASURE );
+this->alpha=0.5;
+        this->beta=1.0;
+this->gamma13=1.0/(2.0-std::pow(2.0,1.0/3.0));
+        this->gamma23=-std::pow(2.0,1.0/3.0)/(2.0-std::pow(2.0,1.0/3.0));
+        this->gamma15=1.0/(2.0-std::pow(2.0,1.0/5.0));
+        this->gamma25=-std::pow(2.0,1.0/5.0)/(2.0-std::pow(2.0,1.0/5.0));
+        std::cout<<"alpha="<<alpha<<std::endl;
+        std::cout<<"beta="<<beta<<std::endl;
+        std::cout<<"gamma13="<<gamma13<<std::endl;
+        std::cout<<"gamma23="<<gamma23<<std::endl;
+        std::cout<<"gamma15="<<gamma15<<std::endl;
+        std::cout<<"gamma25="<<gamma25<<std::endl;
+        //construct tree1
+        this->tree1_level1={gamma13,gamma23,gamma13};
+        this->tree1_level2={alpha,beta,alpha};
+        for (int i=0;i<3;i++)
+        {
+            for (int j=0;j<3;j++)
+            {
+                std::vector<double>tmp={tree1_level2[j],tree1_level1[i],gamma15};
+                tree1.push_back(tmp);
+            }//end j
+        }//end i
+        //construct tree2
+        tree2_level1={gamma13,gamma23,gamma13};
+        tree2_level2={alpha,beta,alpha};
+        for (int i=0;i<3;i++)
+        {
+            for (int j=0;j<3;j++)
+            {
+                std::vector<double>tmp={tree2_level2[j],tree2_level1[i],gamma25};
+                tree2.push_back(tmp);
+            }
+        }
 
+        //construct tree2
+        tree3_level1={gamma13,gamma23,gamma13};
+        tree3_level2={alpha,beta,alpha};
+        for (int i=0;i<3;i++)
+        {
+            for (int j=0;j<3;j++)
+            {
+                std::vector<double>tmp={tree3_level2[j],tree3_level1[i],gamma15};
+                tree3.push_back(tmp);
+            }//end j
+        }//end i
+        // std::cout<<"tree3:\n";
+        // for (int i =0;i<9;i++)
+        // {
+        //     printVec(tree3[i]);
+        // }
 
+        this->U1_inds={0,2,3,5,6,8};
+        this->U2_inds={1,4,7};
+        this->tTot=5.0;
+        this->Q=static_cast<int>(1e6);
+        this->dt=tTot/static_cast<double>(Q);
+        std::cout<<"tTot="<<tTot<<std::endl;
+        std::cout<<"Q="<<Q<<std::endl;
+        std::cout<<"dt="<<dt<<std::endl;
     }//end constructor
 
  ~ evolution()
@@ -369,6 +427,13 @@ public:
         fftw_destroy_plan(plan_2d_ifft_I_widehat_2_J_widehat);
     }
 public:
+    ///
+    ///initialize A,B,S2,V in tree1
+    void init_tree1_mats();
+
+
+    void init_tree2_mats();
+    void init_tree3_mats();
     arma::cx_dmat construct_V_mat(const double &Delta_t);
     ///
     /// @param Psi_arma wavefunction in cx_dmat
@@ -464,6 +529,9 @@ public:
     double dx2;
 
     double dtEst;
+    double tTot;
+    double dt;
+    int Q;
     std::vector<double> x1ValsAll;
     std::vector<double> x2ValsAll;
     std::vector<double> k1ValsAll_fft;
@@ -477,7 +545,12 @@ public:
     std::vector<double>k2ValsAll_interpolation;
 
 
-
+   double alpha;
+    double beta;
+    double gamma13;
+    double gamma23;
+    double gamma15;
+    double gamma25;
     //parameters for A
     double D;
     double mu;
@@ -516,6 +589,35 @@ public:
     fftw_plan plan_2d_ifft_I_widehat_2_J_widehat;
 
 
+    std::vector<double >tree1_level1;
+    std::vector<double> tree1_level2;
+    std::vector<std::vector<double>> tree1;
+
+    std::vector<double >tree2_level1;
+    std::vector<double> tree2_level2;
+    std::vector<std::vector<double>> tree2;
+
+    std::vector<double >tree3_level1;
+    std::vector<double> tree3_level2;
+    std::vector<std::vector<double>> tree3;
+
+    std::vector<arma::cx_dmat> tree1_A_mat_all;
+    std::vector<arma::cx_dmat>tree1_B_mat_all;
+    std::vector<arma::cx_dmat>tree1_S2_mat_all;
+    std::vector<arma::cx_dmat>tree1_V_mat_all;
+
+    std::vector<arma::cx_dmat> tree2_A_mat_all;
+    std::vector<arma::cx_dmat>tree2_B_mat_all;
+    std::vector<arma::cx_dmat>tree2_S2_mat_all;
+    std::vector<arma::cx_dmat>tree2_V_mat_all;
+
+    std::vector<arma::cx_dmat> tree3_A_mat_all;
+    std::vector<arma::cx_dmat>tree3_B_mat_all;
+    std::vector<arma::cx_dmat>tree3_S2_mat_all;
+    std::vector<arma::cx_dmat>tree3_V_mat_all;
+
+std::vector<int> U1_inds;
+    std::vector<int> U2_inds;
 
 };
 

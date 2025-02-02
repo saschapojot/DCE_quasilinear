@@ -338,3 +338,17 @@ arma::cx_dmat evolution::construct_V_mat(const double &Delta_t)
     }
     return V_mat;
 }
+
+
+///
+///initialize A,B,S2,V in tree1
+void evolution::init_tree1_mats()
+{
+//initialize tree1_A_mat_all
+    tree1_A_mat_all.reserve(6);
+    // for (const auto& ind : this->U1_inds)
+    // {
+    //     arma::cx_dmat A_tmp=
+    // }
+
+}
