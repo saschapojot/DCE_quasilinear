@@ -65,6 +65,8 @@ void evolution::init()
     this->init_psi0();
     this->construct_S_mat_spatial();
 
+    this->init_mats_in_trees();
+
 }
 
 
@@ -147,7 +149,7 @@ std::complex<double> evolution::B(const double& x1, const double& x2, const doub
 
 arma::dmat evolution::construct_S_mat(const double &tau)
 {
-
+    // this->construct_S_mat_spatial();
     double exp_part= std::exp(lmd*std::sin(theta)*tau);
 
     double sin_val=std::sin(omegap*tau);
@@ -338,17 +340,191 @@ arma::cx_dmat evolution::construct_V_mat(const double &Delta_t)
     }
     return V_mat;
 }
-
+///
+/// @param vec
+/// @return the product of elements in vec
+double evolution::vec_prod(const std::vector<double>& vec)
+{
+    double rst=1;
+    for (const auto& elem:vec)
+    {
+        rst*=elem;
+    }
+    return rst;
+}
 
 ///
 ///initialize A,B,S2,V in tree1
 void evolution::init_tree1_mats()
 {
+    // std::cout<<"this->U1_inds.size()="<<this->U1_inds.size()<<std::endl;
+    // U1 part
 //initialize tree1_A_mat_all
-    tree1_A_mat_all.reserve(6);
-    // for (const auto& ind : this->U1_inds)
-    // {
-    //     arma::cx_dmat A_tmp=
-    // }
+    tree1_A_mat_all.reserve(this->U1_inds.size());
+    for (const auto& ind : this->U1_inds)
+    {
+    // std::cout<<"ind="<<ind<<", ";
+        // printVec(tree1[ind]);
+        double tauTmp_coef=this->vec_prod(tree1[ind]);
+        // std::cout<<"tauTmp_coef="<<tauTmp_coef<<std::endl;
+        double tau_tmp=tauTmp_coef*this->dt;
+        arma::cx_dmat A_tmp=construct_A_mat(tau_tmp);
+        tree1_A_mat_all.push_back(A_tmp);
+    }//end initializing tree1_A_mat_all
 
+
+  //initialize tree1_B_mat_all
+    tree1_B_mat_all.reserve(this->U1_inds.size());
+    for (const auto& ind : this->U1_inds)
+    {
+        double tauTmp_coef=this->vec_prod(tree1[ind]);
+        double tau_tmp=tauTmp_coef*this->dt;
+        arma::cx_dmat B_tmp=construct_B_mat(tau_tmp);
+        tree1_B_mat_all.push_back(B_tmp);
+    }//end initializing tree1_B_mat_all
+
+    //initialize tree1_S2_mat_all
+    tree1_S2_mat_all.reserve(this->U1_inds.size());
+    for (const auto& ind : this->U1_inds)
+    { double tauTmp_coef=this->vec_prod(tree1[ind]);
+        double tau_tmp=tauTmp_coef*this->dt;
+        arma::dmat S2_tmp=construct_S_mat(tau_tmp);
+        tree1_S2_mat_all.push_back(S2_tmp);
+    }//end initializing  tree1_S2_mat_all
+    // end U1 part
+
+
+    // U2 part
+    //initialize tree1_V_mat_all
+    tree1_V_mat_all.reserve(this->U2_inds.size());
+    for (const auto& ind: this->U2_inds)
+    {
+        // std::cout<<"ind="<<ind<<", ";
+        // printVec(tree1[ind]);
+        double Delta_t_coef_tmp=this->vec_prod(tree1[ind]);
+        double Delta_tTmp=Delta_t_coef_tmp*this->dt;
+        arma::cx_dmat V_tmp=construct_V_mat(Delta_tTmp);
+        tree1_V_mat_all.push_back(V_tmp);
+    }
+    //end initializing  tree1_V_mat_all
+    // end U2 part
+
+
+
+
+}
+
+///
+///initialize A,B,S2,V in tree2
+void evolution::init_tree2_mats()
+{
+    // U1 part
+    //initialize tree2_A_mat_all
+    tree2_A_mat_all.reserve(this->U1_inds.size());
+    for (const auto& ind:this->U1_inds)
+    {
+        // std::cout<<"ind="<<ind<<", ";
+        // printVec(tree2[ind]);
+        double tauTmp_coef=this->vec_prod(tree2[ind]);
+        double tau_tmp=tauTmp_coef*this->dt;
+        arma::cx_dmat A_tmp=construct_A_mat(tau_tmp);
+        tree2_A_mat_all.push_back(A_tmp);
+    }//end initializing tree2_A_mat_all
+
+    //initialize tree2_B_mat_all
+    tree2_B_mat_all.reserve(this->U1_inds.size());
+    for (const auto& ind:this->U1_inds)
+    {
+        double tauTmp_coef=this->vec_prod(tree2[ind]);
+        double tau_tmp=tauTmp_coef*this->dt;
+        arma::cx_dmat  B_tmp=construct_B_mat(tau_tmp);
+        tree2_B_mat_all.push_back(B_tmp);
+    }//end initializing tree2_B_mat_all
+
+    //initialize tree2_S2_mat_all
+    tree2_S2_mat_all.reserve(this->U1_inds.size());
+    for (const auto& ind:this->U1_inds)
+    {
+        double tauTmp_coef=this->vec_prod(tree2[ind]);
+        double tau_tmp=tauTmp_coef*this->dt;
+        arma::dmat S2_tmp=construct_S_mat(tau_tmp);
+        tree2_S2_mat_all.push_back(S2_tmp);
+    }//end initializing  tree2_S2_mat_all
+    // end U1 part
+
+
+    // U2 part
+    //initialize tree2_V_mat_all
+    // std::cout<<"this->U2_inds.size()="<<this->U2_inds.size()<<std::endl;
+    tree2_V_mat_all.reserve(this->U2_inds.size());
+    for (const auto& ind: this->U2_inds)
+    {
+        // std::cout<<"ind="<<ind<<", ";
+        // printVec(tree2[ind]);
+        double Delta_t_coef_tmp=this->vec_prod(tree2[ind]);
+        // std::cout<<"Delta_t_coef_tmp="<<Delta_t_coef_tmp<<std::endl;
+        double Delta_tTmp=Delta_t_coef_tmp*this->dt;
+        arma::cx_dmat V_tmp=construct_V_mat(Delta_tTmp);
+        tree2_V_mat_all.push_back(V_tmp);
+    }//end initializing  tree2_V_mat_all
+    // end U2 part
+}
+///
+///initialize A,B,S2,V in tree3
+void evolution::init_tree3_mats()
+{
+    // U1 part
+    //initialize tree3_A_mat_all
+    tree3_A_mat_all.reserve(this->U1_inds.size());
+    for (const auto& ind : this->U1_inds)
+    {
+        // std::cout<<"ind="<<ind<<", ";
+        // printVec(tree3[ind]);
+        double tauTmp_coef=this->vec_prod(tree3[ind]);
+        double tau_tmp=tauTmp_coef*this->dt;
+        arma::cx_dmat A_tmp=construct_A_mat(tau_tmp);
+        tree3_A_mat_all.push_back(A_tmp);
+    }//end initializing tree3_A_mat_all
+
+    //initialize tree3_B_mat_all
+    tree3_B_mat_all.reserve(this->U1_inds.size());
+    for (const auto& ind : this->U1_inds)
+    {
+        double tauTmp_coef=this->vec_prod(tree3[ind]);
+        double tau_tmp=tauTmp_coef*this->dt;
+        arma::cx_dmat B_tmp=construct_B_mat(tau_tmp);
+        tree3_B_mat_all.push_back(B_tmp);
+    }//end initializing tree3_B_mat_all
+
+    //initialize tree3_S2_mat_all
+    tree3_S2_mat_all.reserve(this->U1_inds.size());
+    for (const auto& ind : this->U1_inds)
+    {
+        double tauTmp_coef=this->vec_prod(tree3[ind]);
+        double tau_tmp=tauTmp_coef*this->dt;
+        arma::dmat S2_tmp=construct_S_mat(tau_tmp);
+        tree3_S2_mat_all.push_back(S2_tmp);
+    }//end initializing tree3_S2_mat_all
+    // end U1 part
+
+    // U2 part
+    //initialize tree3_V_mat_all
+    // tree3_V_mat_all.reserve(this->U2_inds.size());
+    for (const auto& ind: this->U2_inds)
+    {
+        // std::cout<<"ind="<<ind<<", ";
+        // printVec(tree3[ind]);
+        double Delta_t_coef_tmp=this->vec_prod(tree3[ind]);
+        // std::cout<<"Delta_t_coef_tmp="<<Delta_t_coef_tmp<<std::endl;
+        double Delta_tTmp=Delta_t_coef_tmp*this->dt;
+        arma::cx_dmat V_tmp=construct_V_mat(Delta_tTmp);
+        tree3_V_mat_all.push_back(V_tmp);
+    }//end initializing  tree3_V_mat_all
+
+}
+void evolution::init_mats_in_trees()
+{
+    this->init_tree1_mats();
+    this->init_tree2_mats();
+    this->init_tree3_mats();
 }

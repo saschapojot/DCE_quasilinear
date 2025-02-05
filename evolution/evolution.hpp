@@ -398,11 +398,11 @@ this->gamma13=1.0/(2.0-std::pow(2.0,1.0/3.0));
                 tree3.push_back(tmp);
             }//end j
         }//end i
-        // std::cout<<"tree3:\n";
-        // for (int i =0;i<9;i++)
-        // {
-        //     printVec(tree3[i]);
-        // }
+        std::cout<<"tree1:\n";
+        for (int i =0;i<9;i++)
+        {
+            printVec(tree1[i]);
+        }
 
         this->U1_inds={0,2,3,5,6,8};
         this->U2_inds={1,4,7};
@@ -427,13 +427,27 @@ this->gamma13=1.0/(2.0-std::pow(2.0,1.0/3.0));
         fftw_destroy_plan(plan_2d_ifft_I_widehat_2_J_widehat);
     }
 public:
+    void init_mats_in_trees();
     ///
     ///initialize A,B,S2,V in tree1
     void init_tree1_mats();
 
-
+    ///
+    ///initialize A,B,S2,V in tree2
     void init_tree2_mats();
+
+
+    ///
+    ///initialize A,B,S2,V in tree3
     void init_tree3_mats();
+
+
+    ///
+    /// @param vec
+    /// @return the product of elements in vec
+    double vec_prod(const std::vector<double>& vec);
+
+
     arma::cx_dmat construct_V_mat(const double &Delta_t);
     ///
     /// @param Psi_arma wavefunction in cx_dmat
@@ -603,17 +617,17 @@ public:
 
     std::vector<arma::cx_dmat> tree1_A_mat_all;
     std::vector<arma::cx_dmat>tree1_B_mat_all;
-    std::vector<arma::cx_dmat>tree1_S2_mat_all;
+    std::vector<arma::dmat>tree1_S2_mat_all;
     std::vector<arma::cx_dmat>tree1_V_mat_all;
 
     std::vector<arma::cx_dmat> tree2_A_mat_all;
     std::vector<arma::cx_dmat>tree2_B_mat_all;
-    std::vector<arma::cx_dmat>tree2_S2_mat_all;
+    std::vector<arma::dmat>tree2_S2_mat_all;
     std::vector<arma::cx_dmat>tree2_V_mat_all;
 
     std::vector<arma::cx_dmat> tree3_A_mat_all;
     std::vector<arma::cx_dmat>tree3_B_mat_all;
-    std::vector<arma::cx_dmat>tree3_S2_mat_all;
+    std::vector<arma::dmat>tree3_S2_mat_all;
     std::vector<arma::cx_dmat>tree3_V_mat_all;
 
 std::vector<int> U1_inds;
