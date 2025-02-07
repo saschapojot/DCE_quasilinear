@@ -300,7 +300,7 @@ public:
         this->Phi=new std::complex<double>[N1*N2];
         this->D_widehat=new std::complex<double>[N1*N2];
         this->I_widehat=new std::complex<double>[N1*N2];
-        this->J_widehat=new std::complex<double>[N1*N2];
+        this->J=new std::complex<double>[N1*N2];
         //arma matrices
         this->d_arma=arma::cx_dmat(N1,N2);
         this->c_arma=arma::cx_dmat(N1,N2);
@@ -310,14 +310,14 @@ public:
         //plans
 
         //plan Phi to d_ptr, column fft
-       this->M1_Phi=N2;
-       this->M2_phi=N1;
-       int rank_Phi_2_d_ptr=1;
+        this->M1_Phi=N2;
+        this->M2_phi=N1;
+        int rank_Phi_2_d_ptr=1;
 
-       int n_Phi[]={M1_Phi};
-       int how_many_Phi=M2_phi;
-       int istride_Phi=M2_phi, ostride_Phi=M2_phi;
-       int idist_Phi=1, odist_Phi=1;
+        int n_Phi[]={M1_Phi};
+        int how_many_Phi=M2_phi;
+        int istride_Phi=M2_phi, ostride_Phi=M2_phi;
+        int idist_Phi=1, odist_Phi=1;
         plan_col_Phi_2_d_ptr=fftw_plan_many_dft(
                 rank_Phi_2_d_ptr,n_Phi,how_many_Phi,
                 reinterpret_cast < fftw_complex * >(Phi), NULL,
@@ -327,7 +327,7 @@ public:
                 FFTW_FORWARD, FFTW_MEASURE
                 );
 
-       //end plan Phi to d_ptr, column fft
+        //end plan Phi to d_ptr, column fft
         // double x1Tmp=0.1;
         // double x2Tmp=0.2;
         // double tauTmp=0.04;
@@ -349,12 +349,12 @@ public:
             reinterpret_cast<fftw_complex*>(D_widehat),
            FFTW_FORWARD, FFTW_MEASURE);
 
-        this->plan_2d_ifft_I_widehat_2_J_widehat=fftw_plan_dft_2d(N2,N1,
+        this->plan_2d_ifft_I_widehat_2_J=fftw_plan_dft_2d(N2,N1,
             reinterpret_cast<fftw_complex*>(I_widehat),
-            reinterpret_cast<fftw_complex*>(J_widehat),FFTW_BACKWARD,FFTW_MEASURE );
-this->alpha=0.5;
+            reinterpret_cast<fftw_complex*>(J),FFTW_BACKWARD,FFTW_MEASURE );
+        this->alpha=0.5;
         this->beta=1.0;
-this->gamma13=1.0/(2.0-std::pow(2.0,1.0/3.0));
+        this->gamma13=1.0/(2.0-std::pow(2.0,1.0/3.0));
         this->gamma23=-std::pow(2.0,1.0/3.0)/(2.0-std::pow(2.0,1.0/3.0));
         this->gamma15=1.0/(2.0-std::pow(2.0,1.0/5.0));
         this->gamma25=-std::pow(2.0,1.0/5.0)/(2.0-std::pow(2.0,1.0/5.0));
@@ -412,19 +412,21 @@ this->gamma13=1.0/(2.0-std::pow(2.0,1.0/3.0));
         std::cout<<"tTot="<<tTot<<std::endl;
         std::cout<<"Q="<<Q<<std::endl;
         std::cout<<"dt="<<dt<<std::endl;
+        this->normalizing_factor2d=std::complex<double>(1.0/(static_cast<double>(N1*N2)),0);
+        std::cout<<"normalizing_factor2d="<<normalizing_factor2d<<std::endl;
     }//end constructor
 
- ~ evolution()
+    ~ evolution()
     {
         delete[] d_ptr;
         delete[] Phi;
         delete [] D_widehat;
         delete [] I_widehat;
-        delete [] J_widehat;
+        delete [] J;
 
         fftw_destroy_plan(plan_col_Phi_2_d_ptr);
         fftw_destroy_plan(plan_2d_fft_Phi_2_D_widehat);
-        fftw_destroy_plan(plan_2d_ifft_I_widehat_2_J_widehat);
+        fftw_destroy_plan(plan_2d_ifft_I_widehat_2_J);
     }
 public:
     void init_mats_in_trees();
@@ -450,10 +452,10 @@ public:
 
     arma::cx_dmat construct_V_mat(const double &Delta_t);
     ///
-    /// @param Psi_arma wavefunction in cx_dmat
-    /// @param Delta_t time step
-    /// this function computes evolution in U2
-    void step_U2(arma::cx_dmat & Psi_arma, const double &Delta_t);
+    /// @param Psi_arma wavefunction
+    /// @param tree_x_V_mat_all vector for V mat
+    /// @param  j: which one of tree_x_V_mat_all to use
+    void step_U2(arma::cx_dmat & Psi_arma,const std::vector<arma::cx_dmat>& tree_x_V_mat_all,const int& j);
 
     ///
     /// @param Delta_t time step
@@ -559,7 +561,7 @@ public:
     std::vector<double>k2ValsAll_interpolation;
 
 
-   double alpha;
+    double alpha;
     double beta;
     double gamma13;
     double gamma23;
@@ -595,12 +597,14 @@ public:
     //data for U2
     arma::cx_dmat F_widehat_arma,G_widehat_arma;
     std::complex<double> * D_widehat;
-  std::complex<double> *  I_widehat;
-    std::complex<double> * J_widehat;
+    std::complex<double> *  I_widehat;
+    std::complex<double> * J;
+    std::complex<double> normalizing_factor2d;
+    arma::cx_dmat V_tmp;
 
     //2d fft
     fftw_plan plan_2d_fft_Phi_2_D_widehat;
-    fftw_plan plan_2d_ifft_I_widehat_2_J_widehat;
+    fftw_plan plan_2d_ifft_I_widehat_2_J;
 
 
     std::vector<double >tree1_level1;
@@ -630,9 +634,8 @@ public:
     std::vector<arma::dmat>tree3_S2_mat_all;
     std::vector<arma::cx_dmat>tree3_V_mat_all;
 
-std::vector<int> U1_inds;
+    std::vector<int> U1_inds;
     std::vector<int> U2_inds;
-
 };
 
 #endif //EVOLUTION_HPP

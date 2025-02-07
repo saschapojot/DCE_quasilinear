@@ -287,10 +287,10 @@ std::complex<double> * evolution::Phi_2_c_arma(){
 
 
 ///
-/// @param Psi_arma wavefunction in cx_dmat
-/// @param Delta_t time step
-/// this function computes evolution in U2
-void evolution::step_U2(arma::cx_dmat & Psi_arma, const double &Delta_t)
+/// @param Psi_arma wavefunction
+/// @param tree_x_V_mat_all vector for V mat
+/// /// @param  j: which one of tree_x_V_mat_all to use
+void evolution::step_U2(arma::cx_dmat & Psi_arma, const std::vector<arma::cx_dmat>& tree_x_V_mat_all,const int& j)
 {
 
 //Psi to Phi
@@ -301,6 +301,20 @@ void evolution::step_U2(arma::cx_dmat & Psi_arma, const double &Delta_t)
 
     //D_widehat to F_widehat_arma
     this->F_widehat_arma=arma::cx_dmat(this->D_widehat,N1,N2,true);
+
+    //F_widehat_arma to G_widehat_arma
+
+     V_tmp=tree_x_V_mat_all[j];
+
+    this->G_widehat_arma=F_widehat_arma % V_tmp;
+
+    this->I_widehat=G_widehat_arma.memptr();
+
+
+    fftw_execute(plan_2d_ifft_I_widehat_2_J);
+
+    Psi_arma=arma::cx_dmat(I_widehat,N1,N2,true)*normalizing_factor2d;
+
 
 
 
