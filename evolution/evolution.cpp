@@ -294,7 +294,8 @@ void evolution::step_U2(arma::cx_dmat & Psi_arma, const std::vector<arma::cx_dma
 {
 
 //Psi to Phi
-    this->Phi=Psi_arma.memptr();
+    std::memcpy(this->Phi,Psi_arma.memptr(),sizeof(std::complex<double>)*N2*N1);
+
 
     //Phi to D_widehat
     fftw_execute(plan_2d_fft_Phi_2_D_widehat);
@@ -308,12 +309,13 @@ void evolution::step_U2(arma::cx_dmat & Psi_arma, const std::vector<arma::cx_dma
 
     this->G_widehat_arma=F_widehat_arma % V_tmp;
 
-    this->I_widehat=G_widehat_arma.memptr();
+    std::memcpy(this->I_widehat,G_widehat_arma.memptr(),sizeof(std::complex<double>)*N2*N1);
+
 
 
     fftw_execute(plan_2d_ifft_I_widehat_2_J);
 
-    Psi_arma=arma::cx_dmat(I_widehat,N1,N2,true)*normalizing_factor2d;
+    Psi_arma=arma::cx_dmat(J,N1,N2,true)*normalizing_factor2d;
 
 
 

@@ -11,6 +11,7 @@
 #include <complex>
 
 #include <cstdio>
+#include <cstring>
 #include <fftw3.h>
 #include <fstream>
 #include <iomanip>
@@ -294,7 +295,7 @@ public:
 
         //matrices
         this->construct_S_mat_spatial();
-
+        std::cout<<"before allocating pointer spaces"<<std::endl;
         //pointers
         this->d_ptr=new std::complex<double>[N1*N2];
         this->Phi=new std::complex<double>[N1*N2];
@@ -304,9 +305,9 @@ public:
         //arma matrices
         this->d_arma=arma::cx_dmat(N1,N2);
         this->c_arma=arma::cx_dmat(N1,N2);
-        this->F_widehat_arma=arma::cx_dmat(N1,N2);
-        this->G_widehat_arma=arma::cx_dmat(N1,N2);
-
+        // this->F_widehat_arma=arma::cx_dmat(N1,N2);
+        // this->G_widehat_arma=arma::cx_dmat(N1,N2);
+        std::cout<<"after allocating pointer spaces"<<std::endl;
         //plans
 
         //plan Phi to d_ptr, column fft
@@ -318,14 +319,14 @@ public:
         int how_many_Phi=M2_phi;
         int istride_Phi=M2_phi, ostride_Phi=M2_phi;
         int idist_Phi=1, odist_Phi=1;
-        plan_col_Phi_2_d_ptr=fftw_plan_many_dft(
-                rank_Phi_2_d_ptr,n_Phi,how_many_Phi,
-                reinterpret_cast < fftw_complex * >(Phi), NULL,
-                istride_Phi,idist_Phi,
-                reinterpret_cast < fftw_complex * >(d_ptr),NULL,
-                ostride_Phi,odist_Phi,
-                FFTW_FORWARD, FFTW_MEASURE
-                );
+        // plan_col_Phi_2_d_ptr=fftw_plan_many_dft(
+        //         rank_Phi_2_d_ptr,n_Phi,how_many_Phi,
+        //         reinterpret_cast < fftw_complex * >(Phi), NULL,
+        //         istride_Phi,idist_Phi,
+        //         reinterpret_cast < fftw_complex * >(d_ptr),NULL,
+        //         ostride_Phi,odist_Phi,
+        //         FFTW_FORWARD, FFTW_MEASURE
+        //         );
 
         //end plan Phi to d_ptr, column fft
         // double x1Tmp=0.1;
@@ -343,15 +344,16 @@ public:
 
         // std::complex<double> B_val_tmp=B(x1Tmp,x2Tmp,tauTmp);
         // std::cout<<"B_val_tmp="<<B_val_tmp<<std::endl;
-
+    std::cout<<"before 2d fft plan"<<std::endl;
         this->plan_2d_fft_Phi_2_D_widehat=fftw_plan_dft_2d(N2,N1,
             reinterpret_cast<fftw_complex*>(Phi),
             reinterpret_cast<fftw_complex*>(D_widehat),
            FFTW_FORWARD, FFTW_MEASURE);
-
+        std::cout<<"one 2d fft"<<std::endl;
         this->plan_2d_ifft_I_widehat_2_J=fftw_plan_dft_2d(N2,N1,
             reinterpret_cast<fftw_complex*>(I_widehat),
             reinterpret_cast<fftw_complex*>(J),FFTW_BACKWARD,FFTW_MEASURE );
+        std::cout<<"after 2d fft"<<std::endl;
         this->alpha=0.5;
         this->beta=1.0;
         this->gamma13=1.0/(2.0-std::pow(2.0,1.0/3.0));
@@ -418,15 +420,17 @@ public:
 
     ~ evolution()
     {
+
+        // fftw_destroy_plan(plan_col_Phi_2_d_ptr);
+        fftw_destroy_plan(plan_2d_fft_Phi_2_D_widehat);
+        fftw_destroy_plan(plan_2d_ifft_I_widehat_2_J);
         delete[] d_ptr;
         delete[] Phi;
         delete [] D_widehat;
         delete [] I_widehat;
         delete [] J;
 
-        fftw_destroy_plan(plan_col_Phi_2_d_ptr);
-        fftw_destroy_plan(plan_2d_fft_Phi_2_D_widehat);
-        fftw_destroy_plan(plan_2d_ifft_I_widehat_2_J);
+
     }
 public:
     void init_mats_in_trees();
