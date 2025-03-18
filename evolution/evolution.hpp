@@ -389,7 +389,7 @@ public:
             }
         }
 
-        //construct tree2
+        //construct tree3
         tree3_level1={gamma13,gamma23,gamma13};
         tree3_level2={alpha,beta,alpha};
         for (int i=0;i<3;i++)
