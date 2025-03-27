@@ -22,6 +22,8 @@
 const auto PI=M_PI;
 using namespace std::complex_literals;
 namespace fs = boost::filesystem;
+using namespace std::complex_literals; // Brings in the i literal
+
 //This subroutine computes evolution using operator splitting
 //one step is exact solution of quasi-linear pde
 
@@ -205,12 +207,15 @@ public:
         for(int n2=static_cast<int >(N2/2);n2<N2;n2++){
             k2ValsAll_fft.push_back(2*PI*static_cast<double >(n2-N2)/(2.0*L2));
         }
+      this->k2Vals_arma_col_vec.set_size(N2);
 
         for(int n2=0;n2<N2;n2++)
         {
-            k2ValsAll_interpolation.push_back(2*PI*static_cast<double>(n2)/(2.0*L2));
+            double tmp=2*PI*static_cast<double>(n2)/(2.0*L2);
+            k2ValsAll_interpolation.push_back(tmp);
+            k2Vals_arma_col_vec(n2)=arma::cx_double(tmp,0);
         }
-
+        // k2Vals_arma_col_vec.print("k2Vals_arma_col_vec:");
 
         for(const auto &val:k2ValsAll_fft){
             k2ValsAllSquared_fft.push_back(std::pow(val,2));
@@ -305,6 +310,7 @@ public:
         //arma matrices
         this->d_arma=arma::cx_dmat(N1,N2);
         this->c_arma=arma::cx_dmat(N1,N2);
+        this->psi_tilde=arma::cx_dmat(N1,N2);
         // this->F_widehat_arma=arma::cx_dmat(N1,N2);
         // this->G_widehat_arma=arma::cx_dmat(N1,N2);
         std::cout<<"after allocating pointer spaces"<<std::endl;
@@ -319,14 +325,14 @@ public:
         int how_many_Phi=M2_phi;
         int istride_Phi=M2_phi, ostride_Phi=M2_phi;
         int idist_Phi=1, odist_Phi=1;
-        // plan_col_Phi_2_d_ptr=fftw_plan_many_dft(
-        //         rank_Phi_2_d_ptr,n_Phi,how_many_Phi,
-        //         reinterpret_cast < fftw_complex * >(Phi), NULL,
-        //         istride_Phi,idist_Phi,
-        //         reinterpret_cast < fftw_complex * >(d_ptr),NULL,
-        //         ostride_Phi,odist_Phi,
-        //         FFTW_FORWARD, FFTW_MEASURE
-        //         );
+        plan_col_Phi_2_d_ptr=fftw_plan_many_dft(
+        rank_Phi_2_d_ptr,n_Phi,how_many_Phi,
+        reinterpret_cast < fftw_complex * >(Phi), NULL,
+        istride_Phi,idist_Phi,
+        reinterpret_cast < fftw_complex * >(d_ptr),NULL,
+        ostride_Phi,odist_Phi,
+        FFTW_FORWARD, FFTW_MEASURE
+        );
 
         //end plan Phi to d_ptr, column fft
         // double x1Tmp=0.1;
@@ -434,6 +440,11 @@ public:
     }
 public:
     void init_mats_in_trees();
+    arma::cx_dmat make_1_slice_in_cube(const int &j,const arma::cx_dmat & S2_mat);
+
+    arma::cx_cube construct_1_cube(const arma::cx_dmat & S2_mat);
+
+
     ///
     ///initialize A,B,S2,V in tree1
     void init_tree1_mats();
@@ -455,6 +466,19 @@ public:
 
 
     arma::cx_dmat construct_V_mat(const double &Delta_t);
+
+    void evolution_1_step(arma::cx_dmat & Psi_arma);
+
+    void tree1_evolution(arma::cx_dmat & Psi_arma);
+
+    void tree2_evolution(arma::cx_dmat & Psi_arma);
+
+    void tree3_evolution(arma::cx_dmat & Psi_arma);
+
+    void step_U1(arma::cx_dmat & Psi_arma,
+        const std::vector<arma::cx_dmat>&tree_x_exp_A_minus_B,
+        const std::vector<arma::cx_cube>& tree_x_exp_S2_cube,
+        const int& j);
     ///
     /// @param Psi_arma wavefunction
     /// @param tree_x_V_mat_all vector for V mat
@@ -468,14 +492,14 @@ public:
     /// @return element of V
     std::complex<double> V_elem(const double &Delta_t, const int &n1, const int &n2);
 
-    std::complex<double> * Phi_2_c_arma();
+    void Phi_2_c_arma();
     ///
     /// @param psi wavefunction matrix
     /// @return raw data pointer, column major order, in the note, the content in pointer is Phi
     std::complex<double> * cx_dmat_2_complex_ptr(const arma::cx_dmat& psi);
 
 
-    arma::dmat construct_S_mat( const double &tau);
+    arma::cx_dmat construct_S_mat( const double &tau);
 
     void construct_S_mat_spatial();
 
@@ -563,7 +587,7 @@ public:
 
     std::vector<double> k1ValsAll_interpolation;
     std::vector<double>k2ValsAll_interpolation;
-
+    arma::cx_vec k2Vals_arma_col_vec;//values of k2, stored in cx_vec
 
     double alpha;
     double beta;
@@ -585,6 +609,7 @@ public:
     std::complex<double> * Phi;
     arma::cx_dmat d_arma;
     arma::cx_dmat c_arma;
+    arma::cx_dmat psi_tilde;
 
 
     arma::dmat S2_mat_part1,S2_mat_part2,S2_mat_part3,S2_mat_part4;
@@ -625,17 +650,23 @@ public:
 
     std::vector<arma::cx_dmat> tree1_A_mat_all;
     std::vector<arma::cx_dmat>tree1_B_mat_all;
-    std::vector<arma::dmat>tree1_S2_mat_all;
+    std::vector<arma::cx_dmat>tree1_S2_mat_all;
+    std::vector<arma::cx_dmat>tree1_exp_A_minus_B;
+    std::vector<arma::cx_cube> tree1_exp_S2_cube;
     std::vector<arma::cx_dmat>tree1_V_mat_all;
 
     std::vector<arma::cx_dmat> tree2_A_mat_all;
     std::vector<arma::cx_dmat>tree2_B_mat_all;
-    std::vector<arma::dmat>tree2_S2_mat_all;
+    std::vector<arma::cx_dmat>tree2_S2_mat_all;
+    std::vector<arma::cx_dmat>tree2_exp_A_minus_B;
+    std::vector<arma::cx_cube> tree2_exp_S2_cube;
     std::vector<arma::cx_dmat>tree2_V_mat_all;
 
     std::vector<arma::cx_dmat> tree3_A_mat_all;
     std::vector<arma::cx_dmat>tree3_B_mat_all;
-    std::vector<arma::dmat>tree3_S2_mat_all;
+    std::vector<arma::cx_dmat>tree3_S2_mat_all;
+    std::vector<arma::cx_dmat>tree3_exp_A_minus_B;
+    std::vector<arma::cx_cube> tree3_exp_S2_cube;
     std::vector<arma::cx_dmat>tree3_V_mat_all;
 
     std::vector<int> U1_inds;
