@@ -65,6 +65,7 @@ void evolution::init()
     this->construct_S_mat_spatial();
 
     this->init_mats_in_trees();
+    std::cout<<"init finished"<<std::endl;
 }
 
 
@@ -672,4 +673,151 @@ arma::cx_cube evolution::construct_1_cube(const arma::cx_dmat& S2_mat)
     }
     // std::cout<<"finished constructing cube"<<std::endl;
     return one_cube;
+}
+
+
+void evolution::tree1_evolution_H1R_only(arma::cx_dmat & Psi_arma)
+{
+    //////////////////////////////////////////////////////
+    this->step_U1(Psi_arma,tree1_exp_A_minus_B,tree1_exp_S2_cube,0);
+    //this->step_U2(Psi_arma,tree1_V_mat_all,0);
+    this->step_U1(Psi_arma,tree1_exp_A_minus_B,tree1_exp_S2_cube,1);
+    //////////////////////////////////////////////////////
+
+    this->step_U1(Psi_arma,tree1_exp_A_minus_B,tree1_exp_S2_cube,2);
+    //this->step_U2(Psi_arma,tree1_V_mat_all,1);
+    this->step_U1(Psi_arma,tree1_exp_A_minus_B,tree1_exp_S2_cube,3);
+
+    //////////////////////////////////////////////////////
+    this->step_U1(Psi_arma,tree1_exp_A_minus_B,tree1_exp_S2_cube,4);
+    //this->step_U2(Psi_arma,tree1_V_mat_all,2);
+    this->step_U1(Psi_arma,tree1_exp_A_minus_B,tree1_exp_S2_cube,5);
+}
+
+
+void evolution::tree2_evolution_H1R_only(arma::cx_dmat & Psi_arma)
+{
+    //////////////////////////////////////////////////////
+    this->step_U1(Psi_arma,tree2_exp_A_minus_B,tree2_exp_S2_cube,0);
+   // this->step_U2(Psi_arma,tree2_V_mat_all,0);
+    this->step_U1(Psi_arma,tree2_exp_A_minus_B,tree2_exp_S2_cube,1);
+    //////////////////////////////////////////////////////
+
+    this->step_U1(Psi_arma,tree2_exp_A_minus_B,tree2_exp_S2_cube,2);
+    //this->step_U2(Psi_arma,tree2_V_mat_all,1);
+    this->step_U1(Psi_arma,tree2_exp_A_minus_B,tree2_exp_S2_cube,3);
+
+    //////////////////////////////////////////////////////
+    this->step_U1(Psi_arma,tree2_exp_A_minus_B,tree2_exp_S2_cube,4);
+    //this->step_U2(Psi_arma,tree2_V_mat_all,2);
+    this->step_U1(Psi_arma,tree2_exp_A_minus_B,tree2_exp_S2_cube,5);
+}
+
+
+void evolution::tree3_evolution_H1R_only(arma::cx_dmat & Psi_arma)
+{
+    //////////////////////////////////////////////////////
+    this->step_U1(Psi_arma,tree3_exp_A_minus_B,tree3_exp_S2_cube,0);
+    //this->step_U2(Psi_arma,tree3_V_mat_all,0);
+    this->step_U1(Psi_arma,tree3_exp_A_minus_B,tree3_exp_S2_cube,1);
+    //////////////////////////////////////////////////////
+
+    this->step_U1(Psi_arma,tree3_exp_A_minus_B,tree3_exp_S2_cube,2);
+    //this->step_U2(Psi_arma,tree3_V_mat_all,1);
+    this->step_U1(Psi_arma,tree3_exp_A_minus_B,tree3_exp_S2_cube,3);
+
+    //////////////////////////////////////////////////////
+    this->step_U1(Psi_arma,tree3_exp_A_minus_B,tree3_exp_S2_cube,4);
+    //this->step_U2(Psi_arma,tree3_V_mat_all,2);
+    this->step_U1(Psi_arma,tree3_exp_A_minus_B,tree3_exp_S2_cube,5);
+
+}
+
+void evolution::evolution_1_step_H1R_only(arma::cx_dmat & Psi_arma)
+{
+    this->tree1_evolution_H1R_only(Psi_arma);
+    this->tree2_evolution_H1R_only(Psi_arma);
+    this->tree3_evolution_H1R_only(Psi_arma);
+}
+
+void evolution::save_complex_array_to_pickle(std::complex<double> ptr[],
+                                    int size,
+                                    const std::string& filename)
+{
+    // Initialize Python interpreter if it is not already initialized.
+    if (!Py_IsInitialized())
+    {
+        Py_Initialize();
+        if (!Py_IsInitialized())
+        {
+            throw std::runtime_error("Failed to initialize Python interpreter");
+        }
+        np::initialize();  // Initialize NumPy
+    }
+
+    try
+    {
+        // Import the pickle module and retrieve the dumps function.
+        bp::object pickle = bp::import("pickle");
+        bp::object pickle_dumps = pickle.attr("dumps");
+
+        // Convert the C++ complex array to a NumPy array.
+        np::ndarray numpy_array = np::from_data(
+            ptr,                                           // Raw pointer to data
+            np::dtype::get_builtin<std::complex<double>>(),// NumPy dtype for std::complex<double>
+            bp::make_tuple(size),                          // Shape: 1D array with "size" elements
+            bp::make_tuple(sizeof(std::complex<double>)),  // Stride: size of one element
+            bp::object()                                   // No base object provided
+        );
+
+        // Serialize the NumPy array using pickle.dumps.
+        bp::object serialized_obj = pickle_dumps(numpy_array);
+        std::string serialized_str = bp::extract<std::string>(serialized_obj);
+
+        // Write the serialized data to a file.
+        std::ofstream file(filename, std::ios::binary);
+        if (!file)
+        {
+            throw std::runtime_error("Failed to open file for writing: " + filename);
+        }
+        file.write(serialized_str.data(), serialized_str.size());
+        file.close();
+
+        // Optional debug output.
+        // std::cout << "Complex array successfully serialized and saved to " << filename << std::endl;
+    }
+    catch (const bp::error_already_set&)
+    {
+        PyErr_Print();
+        std::cerr << "Boost.Python error occurred while saving complex array." << std::endl;
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Exception: " << e.what() << std::endl;
+    }
+}
+
+
+void evolution::run_and_save_H1R_only()
+{
+    this->Psi=this->psi0_arma;
+    std::string outPath="./outData/group"+std::to_string(groupNum)+"/row"
+    +std::to_string(rowNum)+"/wavefunction/";
+    std::string outFileName;
+    if (!fs::is_directory(outPath) || !fs::exists(outPath))
+    {
+        fs::create_directories(outPath);
+    }//end creating outPath
+    std::cout<<"created out dir"<<std::endl;
+    for (int j=0;j<10;j++)
+    {
+        this->evolution_1_step_H1R_only(Psi);
+        if (j%1==0)
+        {   std::cout<<"saving at step "<<j<<std::endl;
+            outFileName=outPath+"/at_time_step_"+std::to_string(j+1);
+
+
+            this->save_complex_array_to_pickle(Psi.memptr(),N1*N2,outFileName);
+        }//end save to file
+    }//end for
 }

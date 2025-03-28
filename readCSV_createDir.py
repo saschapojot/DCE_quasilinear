@@ -70,7 +70,9 @@ params2cppInFile=[
     omegap_Str+"\n",
     omegac_Str+"\n",
     erStr+"\n",
-    thetaCoef_Str+"\n"
+    thetaCoef_Str+"\n",
+    str(groupNum)+"\n",
+    str(rowNum)+"\n"
     ]
 
 cppInParamsFileName=outDir+"/cppIn.txt"

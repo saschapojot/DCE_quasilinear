@@ -6,7 +6,8 @@
 #define EVOLUTION_HPP
 #include <armadillo>
 #include <boost/filesystem.hpp>
-#include <boost/json.hpp>
+#include <boost/python.hpp>
+#include <boost/python/numpy.hpp>
 #include <cmath>
 #include <complex>
 
@@ -20,10 +21,11 @@
 #include <string>
 #include <vector>
 const auto PI=M_PI;
-using namespace std::complex_literals;
+
 namespace fs = boost::filesystem;
 using namespace std::complex_literals; // Brings in the i literal
-
+namespace bp = boost::python;
+namespace np = boost::python::numpy;
 //This subroutine computes evolution using operator splitting
 //one step is exact solution of quasi-linear pde
 
@@ -133,6 +135,22 @@ public:
             }
             //end reading thetaCoef
 
+            //read groupNum
+            if (paramCounter==8)
+            {
+                iss>>groupNum;
+                paramCounter++;
+                continue;
+            }//end groupNum
+
+            //read rowNum
+            if (paramCounter==9)
+            {
+                iss>>rowNum;
+                paramCounter++;
+                continue;
+            }//end rowNum
+
 
         }//end while
 
@@ -140,7 +158,8 @@ public:
         std::cout << std::setprecision(15);
         std::cout<<"j1H="<<j1H<<", j2H="<<j2H<<", g0="<<g0
         <<", omegam="<<omegam<<", omegap="<<omegap<<", omegac="<<omegac
-        <<", er="<<er<<", thetaCoef="<<thetaCoef<<std::endl;
+        <<", er="<<er<<", thetaCoef="<<thetaCoef<<", groupNum="
+        <<groupNum<<", rowNum="<<rowNum<<std::endl;
 
 
         this->L1=5;
@@ -163,6 +182,7 @@ public:
         {
             N1+=1;
         }
+
         std::cout<<"L1="<<L1<<", L2="<<L2<<std::endl;
         std::cout<<"N1="<<N1<<std::endl;
         std::cout<<"N2="<<N2<<std::endl;
@@ -469,6 +489,19 @@ public:
 
     void evolution_1_step(arma::cx_dmat & Psi_arma);
 
+
+    //for numerical tests
+    void run_and_save_H1R_only();
+    //for numerical tests
+    void evolution_1_step_H1R_only(arma::cx_dmat & Psi_arma);
+
+    //for numerical tests
+    void tree1_evolution_H1R_only(arma::cx_dmat & Psi_arma);
+    //for numerical tests
+    void tree2_evolution_H1R_only(arma::cx_dmat & Psi_arma);
+    //for numerical tests
+    void tree3_evolution_H1R_only(arma::cx_dmat & Psi_arma);
+
     void tree1_evolution(arma::cx_dmat & Psi_arma);
 
     void tree2_evolution(arma::cx_dmat & Psi_arma);
@@ -533,8 +566,9 @@ public:
 
     void init_psi0();
 
-
-
+    void save_complex_array_to_pickle(std::complex<double> ptr[],
+                                        int size,
+                                        const std::string& filename);
     template<class T>
    static void printVec(const std::vector <T> &vec) {
         for (int i = 0; i < vec.size() - 1; i++) {
@@ -605,6 +639,7 @@ public:
     double R1,R2,R3,R4,R5,R6,R7,R8,R9,R10;
 
     arma::cx_dmat psi0_arma;//armadillo psi0
+    arma::cx_dmat Psi;
     std::complex<double> * d_ptr;
     std::complex<double> * Phi;
     arma::cx_dmat d_arma;
@@ -671,6 +706,8 @@ public:
 
     std::vector<int> U1_inds;
     std::vector<int> U2_inds;
+
+    std::shared_ptr<std::complex<double>[]> to_pkl_ptr_tmp;
 };
 
 #endif //EVOLUTION_HPP
