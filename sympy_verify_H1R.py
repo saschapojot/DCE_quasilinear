@@ -2,7 +2,8 @@ from sympy import *
 import numpy as np
 import sys
 import pandas as pd
-
+#this script verifies the correctness of the analytical solution of
+# i\partial_{t}\psi=H_{1}^{r}\PSI
 
 omegam,omegap=symbols(r"omega_m,omega_p",cls=Symbol,real=True)
 omegac=symbols("omega_c",cls=Symbol,real=True)
